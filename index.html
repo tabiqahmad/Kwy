@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayushi Trader - Admin Panel</title>
+    <style>
+        body {
+            background-color: #050505;
+            color: #d500f9;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #1a1a1a;
+            padding: 2rem;
+            border: 2px solid #d500f9;
+            border-radius: 16px;
+            box-shadow: 0 0 20px rgba(213, 0, 249, 0.4);
+            width: 350px;
+            text-align: center;
+        }
+        h2 { margin-top: 0; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
+        .input-group { margin: 20px 0; text-align: left; }
+        label { color: #ffd700; font-weight: bold; display: block; margin-bottom: 5px; }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            background-color: #000;
+            border: 1px solid #d500f9;
+            color: #fff;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #d500f9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+        button:hover {
+            background-color: #aa00ff;
+            box-shadow: 0 0 10px #d500f9;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #000;
+            border: 1px dashed #ffd700;
+            display: none;
+        }
+        .key-display {
+            font-size: 24px;
+            color: #ffd700;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin: 10px 0;
+            display: block;
+        }
+        .copy-btn {
+            background: #333;
+            font-size: 12px;
+            padding: 5px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Admin Control</h2>
+        
+        <div class="input-group">
+            <label>Validity Duration:</label>
+            <select id="duration">
+                <option value="1">1 Hour</option>
+                <option value="24" selected>24 Hours</option>
+                <option value="48">2 Days</option>
+                <option value="72">3 Days</option>
+                <option value="168">7 Days</option>
+                <option value="720">30 Days</option>
+            </select>
+        </div>
+
+        <button onclick="generateKey()">GENERATE KEY</button>
+
+        <div id="result">
+            <span style="color:white; font-size:12px;">NEW KEY GENERATED:</span>
+            <span id="keyDisplay" class="key-display">---</span>
+            <button class="copy-btn" onclick="copyKey()">COPY KEY</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Updated Firebase Configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyBr38TQ9pbgHejHlcuAHSMm34M1589UQN4",
+          authDomain: "ayushitrader-d1277.firebaseapp.com",
+          projectId: "ayushitrader-d1277",
+          storageBucket: "ayushitrader-d1277.firebasestorage.app",
+          messagingSenderId: "464672684538",
+          appId: "1:464672684538:web:82c9b408757a55b01c4c43"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function generateKey() {
+            const duration = parseInt(document.getElementById('duration').value);
+            
+            // Generate Random Key (e.g., K9X2P)
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let key = '';
+            for (let i = 0; i < 5; i++) {
+                key += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            key = "VIP" + key; // Prefix to make it look cool
+
+            // Add to Firestore
+            db.collection("login_keys").doc(key).set({
+                used: false,
+                expiry: duration,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('keyDisplay').innerText = key;
+            })
+            .catch((error) => {
+                alert("Error generating key: " + error.message);
+                console.error("Error: ", error);
+            });
+        }
+
+        function copyKey() {
+            const key = document.getElementById('keyDisplay').innerText;
+            navigator.clipboard.writeText(key).then(() => {
+                alert("Key Copied: " + key);
+            });
+        }
+    </script>
+
+</body>
+</html>
